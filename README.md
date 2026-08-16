@@ -164,11 +164,17 @@ LEASH_DEPLOYER=<contract address>  npm run agent -- --interval 60 --advisor
 ## Quickstart
 
 ```sh
-clarinet check    # our 5 contracts + sBTC requirements, zero warnings
+clarinet check    # our 5 contracts + sBTC requirements
 npm install
 npm test          # 58 tests (contracts + agent + AI); no API key needed
 npm run typecheck # agent sources
+npm run fuzz      # Rendezvous invariant fuzzing, 200 randomised runs
 ```
+
+The deployed code is warning-free. The two warnings `clarinet check` reports are
+both on the `context` map — boilerplate Rendezvous requires in exactly that
+shape. That map and every `invariant-` function carry `#[env(simnet)]` and are
+stripped on deploy.
 
 The contract suite covers deposits/withdrawals, every lease guard (agent,
 venue, pair, cap, window reset, expiry, instant revoke), exact trade
@@ -182,6 +188,15 @@ successive windows, one capped trade at a time, and proves the leash — not
 the strategy — is what limits it. It also shows the bot standing down when an
 owner revokes, and the chain refusing a bot that ignores that and tries
 anyway.
+
+**Invariant fuzzing (Rendezvous).** Unit tests prove the paths we thought of;
+`npm run fuzz` proves the properties that must survive orderings we didn't.
+Rendezvous drives random sequences of calls into `leash-vault` and re-checks
+five properties after every step: sBTC solvency and mUSD solvency (the book
+never claims more than the vault holds), the protocol fee never exceeding its
+hard cap, an agent never being told it may spend more than the owner's window
+cap, and revocation leaving no authority behind. All five hold across 200
+randomised runs.
 
 The AI suite stubs the model, so it runs **offline and deterministically —
 no API key, no network**. It covers the containment layer against every way a

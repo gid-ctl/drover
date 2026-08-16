@@ -9,6 +9,7 @@
     "test:report": "vitest run -- --coverage --costs",
     "test:watch": "chokidar \"tests/**/*.ts\" \"contracts/**/*.clar\" -c \"npm run test:report\"",
     "typecheck": "tsc --noEmit",
+    "fuzz": "rv . leash-vault invariant --runs 200",
     "agent": "tsx agent/run.ts",
     "agent:once": "tsx agent/run.ts --once"
   },
@@ -22,5 +23,8 @@
     "chokidar-cli": "^3.0.0",
     "vitest": "^4.0.7",
     "vitest-environment-clarinet": "^3.0.0"
+  },
+  "devDependencies": {
+    "@stacks/rendezvous": "^1.0.3"
   }
 }

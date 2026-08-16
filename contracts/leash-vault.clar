@@ -72,6 +72,13 @@
 ;; principal; this map is the book that says whose they are.
 (define-map balances {owner: principal, token: principal} uint)
 
+;; Sum of every owner's ledger entry, per token. Clarity cannot fold a map, so
+;; the total is maintained incrementally alongside `balances`. It exists for two
+;; reasons: it is the vault's TVL figure, and it makes the solvency invariant
+;; -- book total never exceeds tokens actually held -- checkable on-chain and
+;; fuzzable by Rendezvous.
+(define-map total-ledger principal uint)
+
 ;; One active lease per owner.
 (define-map leases principal {
   agent: principal,
@@ -97,6 +104,27 @@
 
 (define-read-only (get-balance-of (owner principal) (token principal))
   (default-to u0 (map-get? balances {owner: owner, token: token}))
+)
+
+;; Total booked across all owners for one token (the vault's TVL in that asset).
+(define-read-only (get-total-ledger (token principal))
+  (default-to u0 (map-get? total-ledger token))
+)
+
+(define-private (credit-total (token principal) (amount uint))
+  (begin
+    ;; #[allow(unchecked_data)]
+    (map-set total-ledger token (+ (get-total-ledger token) amount))
+    true
+  )
+)
+
+(define-private (debit-total (token principal) (amount uint))
+  (begin
+    ;; #[allow(unchecked_data)]
+    (map-set total-ledger token (- (get-total-ledger token) amount))
+    true
+  )
 )
 
 (define-read-only (get-lease (owner principal))
@@ -134,6 +162,10 @@
     ;; #[allow(unchecked_data)]
     (map-set balances {owner: owner, token: (contract-of token)}
       (+ (get-balance-of owner (contract-of token)) amount))
+    ;; keyed by the token's own principal, so a dishonest token can only ever
+    ;; distort its own total - never another asset's
+    ;; #[allow(unchecked_data)]
+    (credit-total (contract-of token) amount)
     ;; #[filter(amount, token)]
     (try! (contract-call? token transfer amount owner current-contract none))
     (print {event: "deposit", owner: owner, token: (contract-of token), amount: amount})
@@ -151,6 +183,7 @@
     (asserts! (> amount u0) ERR-ZERO-AMOUNT)
     (asserts! (>= balance amount) ERR-INSUFFICIENT-BALANCE)
     (map-set balances {owner: owner, token: (contract-of token)} (- balance amount))
+    (debit-total (contract-of token) amount)
     ;; the debited ledger entry and the payout use the same caller-chosen
     ;; token, and the recipient is the caller - safe by construction
     ;; #[filter(amount, token)]
@@ -264,6 +297,7 @@
       (map-set windows {owner: owner, token: sell} {start: new-start, spent: new-spent})
       ;; #[allow(unchecked_data)]
       (map-set balances {owner: owner, token: sell} (- sell-balance amount-in))
+      (debit-total sell amount-in)
       ;; push exactly amount-in to the venue - the vault's authority stops here
       ;; #[filter(amount-in, sell-token)]
       (try! (contract-call? sell-token transfer amount-in current-contract
@@ -279,6 +313,7 @@
         (asserts! (>= received floor-out) ERR-SLIPPAGE)
         (map-set balances {owner: owner, token: buy}
           (+ (get-balance-of owner buy) net))
+        (credit-total buy net)
         (and (> fee u0)
           ;; #[filter(fee)]
           (try! (contract-call? buy-token transfer fee current-contract
@@ -326,5 +361,79 @@
     (var-set fee-bps bps)
     (print {event: "set-fee-bps", bps: bps})
     (ok true)
+  )
+)
+
+;; --- Rendezvous invariants (simnet only) -------------------------------------
+;; Everything below is stripped on deploy by the `#[env(simnet)]` annotation.
+;; Run with:  npx rv . leash-vault invariant --runs 200
+;;
+;; Rendezvous generates random sequences of calls into this contract and checks
+;; after every step that each `invariant-` function still holds. The unit tests
+;; prove the paths we thought of; these prove the properties that must survive
+;; orderings we did not think of.
+
+;; Call-count bookkeeping required by the fuzzer.
+;; #[env(simnet)]
+(define-map context (string-ascii 100) {called: uint})
+
+;; #[env(simnet)]
+(define-private (update-context (function-name (string-ascii 100)) (called uint))
+  (ok (map-set context function-name {called: called}))
+)
+
+;; Solvency: the book must never claim more sBTC than the vault actually holds.
+;; If this fails, some owner cannot withdraw what the ledger says is theirs -
+;; the failure that matters most in a vault. Stated as <= rather than = on
+;; purpose: anyone may transfer tokens in directly without a ledger entry, so a
+;; surplus is legitimate. A deficit is insolvency.
+;; #[env(simnet)]
+(define-read-only (invariant-sbtc-solvent)
+  ;; `unwrap!` rather than `unwrap-panic`: an unreadable balance should fail the
+  ;; invariant visibly, not abort the fuzz run with a panic.
+  (<=
+    (get-total-ledger 'SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token)
+    (unwrap! (contract-call? 'SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token
+      get-balance current-contract) false)
+  )
+)
+
+;; Same property for the SIP-010 side of the pair.
+;; #[env(simnet)]
+(define-read-only (invariant-asset-solvent)
+  (<=
+    (get-total-ledger .leash-asset)
+    (unwrap! (contract-call? .leash-asset get-balance current-contract) false)
+  )
+)
+
+;; No sequence of admin calls may push the protocol fee above its hard cap.
+;; #[env(simnet)]
+(define-read-only (invariant-fee-bps-capped)
+  (<= (var-get fee-bps) MAX-FEE-BPS)
+)
+
+;; The agent may never be told it can spend more than the owner's window cap.
+;; #[env(simnet)]
+(define-read-only (invariant-allowance-within-cap)
+  (match (map-get? leases tx-sender) lease
+    (and
+      (<= (remaining-allowance tx-sender (get token-a lease)) (get cap-a lease))
+      (<= (remaining-allowance tx-sender (get token-b lease)) (get cap-b lease))
+    )
+    true
+  )
+)
+
+;; Revocation is complete: with no lease, nothing is authorised.
+;; #[env(simnet)]
+(define-read-only (invariant-no-allowance-without-lease)
+  (match (map-get? leases tx-sender) lease
+    true
+    (and
+      (is-eq (remaining-allowance tx-sender
+        'SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token) u0)
+      (is-eq (remaining-allowance tx-sender .leash-asset) u0)
+    )
   )
 )
