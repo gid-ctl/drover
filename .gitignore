@@ -1,0 +1,8 @@
+node_modules/
+.cache/
+logs/
+*.log
+coverage/
+lcov.info
+costs-reports.json
+.DS_Store

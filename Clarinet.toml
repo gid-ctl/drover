@@ -1,0 +1,55 @@
+[project]
+name = 'leash'
+description = 'Non-custodial trading authority for AI agents on Stacks: bounded, revocable, chain-enforced.'
+authors = []
+telemetry = false
+cache_dir = './.cache'
+
+# Canonical SIP-010 fungible-token trait (mainnet).
+[[project.requirements]]
+contract_id = 'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.sip-010-trait-ft-standard'
+
+# Official sBTC token. Clarinet remaps this address per-network on deploy
+# (simnet/mainnet -> SM3VDX..., testnet -> ST1F7QA2...sbtc-token).
+[[project.requirements]]
+contract_id = 'SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token'
+
+[contracts.leash-adapter-trait]
+path = 'contracts/leash-adapter-trait.clar'
+clarity_version = 4
+epoch = 'latest'
+
+[contracts.leash-asset]
+path = 'contracts/leash-asset.clar'
+clarity_version = 4
+epoch = 'latest'
+
+[contracts.leash-pool]
+path = 'contracts/leash-pool.clar'
+clarity_version = 4
+epoch = 'latest'
+
+[contracts.leash-rogue-adapter]
+path = 'contracts/leash-rogue-adapter.clar'
+clarity_version = 4
+epoch = 'latest'
+
+[contracts.leash-vault]
+path = 'contracts/leash-vault.clar'
+clarity_version = 4
+epoch = 'latest'
+
+[repl.analysis]
+passes = ['check_checker']
+
+[repl.analysis.lints]
+
+[repl.analysis.check_checker]
+strict = false
+trusted_sender = false
+trusted_caller = false
+callee_filter = false
+
+[repl.remote_data]
+enabled = false
+api_url = 'https://api.hiro.so'
