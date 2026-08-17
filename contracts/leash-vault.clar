@@ -254,12 +254,23 @@
 ;; --- Agent: trade inside the leash -------------------------------------------
 ;; The agent may be a wallet (tx-sender) or an on-chain contract
 ;; (contract-caller), so autonomous agents can hold a lease directly.
+;; `agent-min-out` lets the agent raise the floor above what the owner's policy
+;; alone would require. It can only ever tighten: the enforced floor is the
+;; maximum of the owner's two floors and this value, so an agent passing u0
+;; changes nothing and an agent passing a large number only binds itself.
+;;
+;; This exists because not every venue can be priced on-chain. A constant-product
+;; pool yields a spot quote the vault can verify; a bin-based pool (Bitflow's
+;; DLMM) does not, so its adapter reports no spot and the owner's `min-price`
+;; would otherwise be the only floor. An agent reading live quotes off-chain can
+;; supply a tight, current bound here without ever being trusted with a loose one.
 (define-public (trade
     (owner principal)
     (adapter <adapter-trait>)
     (sell-token <ft-trait>)
     (buy-token <ft-trait>)
     (amount-in uint)
+    (agent-min-out uint)
   )
   (let (
       (lease (unwrap! (map-get? leases owner) ERR-NO-LEASE))
@@ -288,7 +299,9 @@
         (spot (try! (contract-call? adapter quote sell amount-in)))
         (floor-spot (/ (* spot (- BPS-DEN (get max-slippage-bps lease))) BPS-DEN))
         (floor-price (/ (* amount-in min-price) PRICE-SCALE))
-        (floor-out (if (> floor-spot floor-price) floor-spot floor-price))
+        (floor-owner (if (> floor-spot floor-price) floor-spot floor-price))
+        ;; the agent may raise the floor, never lower it
+        (floor-out (if (> agent-min-out floor-owner) agent-min-out floor-owner))
         (before (unwrap! (contract-call? buy-token get-balance current-contract) ERR-BALANCE-READ))
       )
       (asserts! (<= new-spent cap) ERR-CAP-EXCEEDED)

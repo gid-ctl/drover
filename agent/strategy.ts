@@ -122,7 +122,11 @@ export function decide(state: VaultState, opts: StrategyOptions): Decision {
   }
 
   return {
-    plan: { sell: overweight ? "sbtc" : "musd", amountIn, limitedBy },
+    // minOut is 0 here: the constant-mix strategy trades venues the vault can
+    // price itself, so the owner's spot-derived floor governs. An agent driving
+    // an unpriceable venue (see agent/README on bin-based pools) should set this
+    // from a live quote before submitting.
+    plan: { sell: overweight ? "sbtc" : "musd", amountIn, limitedBy, minOut: 0n },
     diagnosis: {
       totalValue,
       sbtcValue,

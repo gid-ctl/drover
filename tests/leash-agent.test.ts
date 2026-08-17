@@ -185,7 +185,12 @@ describe("Drover on a leash (end to end)", () => {
     expect(after.receipt).toBeNull();
 
     // And a bot that ignores all of that still gets nowhere: the chain refuses.
-    const forced = await d.submit({ sell: "sbtc", amountIn: 1_000_000n, limitedBy: "target" });
+    const forced = await d.submit({
+      sell: "sbtc",
+      amountIn: 1_000_000n,
+      limitedBy: "target",
+      minOut: 0n,
+    });
     expect(forced.ok).toBe(false);
     expect(ledger(OWNER, SBTC)).toBe(heldAfterFirstTrade);
   });

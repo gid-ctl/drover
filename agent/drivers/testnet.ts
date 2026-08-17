@@ -104,6 +104,7 @@ export class TestnetDriver implements Driver {
         Cl.principal(sellToken),
         Cl.principal(buyToken),
         Cl.uint(plan.amountIn),
+        Cl.uint(plan.minOut),
       ],
       senderKey: agentKey,
       network: this.network,

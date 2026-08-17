@@ -60,6 +60,7 @@ venue's own authority only. Consequences, each proven in the test suite:
 | Agent cannot re-route | venue adapter and token pair pinned in the lease |
 | Venue cannot steal the vault | it only ever receives exactly `amount-in`, nothing more |
 | Venue cannot under-fill | measured-proceeds floor; breach reverts the whole transaction |
+| Agent can tighten but not loosen | enforced floor is the max of the owner's floors and the agent's `min-out` |
 | Rogue venue worst case | bounded to one windowed cap per window (test-proven), and only if the owner disables both price guards |
 | Owner exit | `withdraw` and `revoke-lease` work at any block, no notice, no agent veto |
 | Protocol admin | fee switch only, hard-capped at 1%; no admin path touches user funds |
@@ -225,7 +226,7 @@ target and *nothing else*.
 (revoke-lease)
 
 ;; agent (wallet or contract - both tx-sender and contract-caller are honoured)
-(trade owner adapter sell-token buy-token amount-in)
+(trade owner adapter sell-token buy-token amount-in agent-min-out)
 
 ;; anyone
 (get-balance-of owner token) (get-lease owner) (remaining-allowance owner token)

@@ -81,6 +81,7 @@ export class SimnetDriver implements Driver {
         Cl.principal(sellToken),
         Cl.principal(buyToken),
         Cl.uint(plan.amountIn),
+        Cl.uint(plan.minOut),
       ],
       agent
     );

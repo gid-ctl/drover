@@ -231,7 +231,7 @@ export const trade = (
   agent: string,
   owner: string,
   amount: bigint,
-  opts: { adapter?: string; sell?: string; buy?: string } = {}
+  opts: { adapter?: string; sell?: string; buy?: string; minOut?: bigint } = {}
 ) =>
   simnet.callPublicFn(
     VAULT,
@@ -242,6 +242,7 @@ export const trade = (
       Cl.principal(opts.sell ?? SBTC),
       Cl.principal(opts.buy ?? contractId(ASSET)),
       Cl.uint(amount),
+      Cl.uint(opts.minOut ?? 0n),
     ],
     agent
   );

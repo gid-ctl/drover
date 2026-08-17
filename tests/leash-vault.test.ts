@@ -201,6 +201,31 @@ describe("trading inside the leash", () => {
     expect(ledger(OWNER, SBTC)).toBe(DEPOSIT); // the whole transaction unwound
   });
 
+  it("lets the agent raise the floor above the owner's policy", () => {
+    fundAndDeposit(OWNER);
+    grantLease(OWNER, AGENT);
+    const { ra, rb } = reserves();
+    const received = cpOut(TRADE, ra, rb);
+    // Asking for one unit more than the venue can possibly deliver must fail,
+    // even though the owner's own slippage policy would have allowed the fill.
+    expect(trade(AGENT, OWNER, TRADE, { minOut: received + 1n }).result).toBeErr(
+      Cl.uint(POOL_ERR_SLIPPAGE)
+    );
+    expect(ledger(OWNER, SBTC)).toBe(DEPOSIT); // unwound, nothing spent
+  });
+
+  it("never lets the agent lower the owner's floor", () => {
+    fundAndDeposit(OWNER);
+    // A tight owner policy: 0.1% tolerance against a ~9% impact trade.
+    grantLease(OWNER, AGENT, { capA: 10n * DEPOSIT, slippageBps: 10n });
+    // The agent asks for a floor of zero — i.e. "fill at any price". The
+    // owner's floor still governs, so the trade is still refused.
+    expect(trade(AGENT, OWNER, DEPOSIT, { minOut: 0n }).result).toBeErr(
+      Cl.uint(POOL_ERR_SLIPPAGE)
+    );
+    expect(ledger(OWNER, SBTC)).toBe(DEPOSIT);
+  });
+
   it("trades the reverse direction under its own cap", () => {
     const amount = 100_000_000n; // 100 mUSD
     fundAndDepositMusd(OWNER, amount);

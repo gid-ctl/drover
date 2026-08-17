@@ -37,6 +37,14 @@ export interface TradePlan {
   sell: SellSide;
   amountIn: bigint;
   limitedBy: SizeLimit;
+  /**
+   * Floor the agent asks the vault to enforce, in buy-side units. The vault
+   * takes the maximum of this and the owner's own floors, so this can only
+   * tighten the trade. `0n` defers entirely to the owner's policy — correct
+   * for venues the vault can price itself; venues it cannot price (bin-based
+   * pools) should set it from a live quote.
+   */
+  minOut: bigint;
 }
 
 /** Why the strategy did what it did - surfaced for logs and for the UI feed. */
