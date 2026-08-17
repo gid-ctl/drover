@@ -73,16 +73,6 @@ plan:
   - id: 1
     transactions:
     - transaction-type: emulated-contract-publish
-      contract-name: sbtc-registry
-      emulated-sender: SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4
-      path: .cache/requirements/SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-registry.clar
-      clarity-version: 3
-    - transaction-type: emulated-contract-publish
-      contract-name: sbtc-token
-      emulated-sender: SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4
-      path: .cache/requirements/SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token.clar
-      clarity-version: 3
-    - transaction-type: emulated-contract-publish
       contract-name: sbtc-deposit
       emulated-sender: SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4
       path: .cache/requirements/SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-deposit.clar
@@ -91,9 +81,62 @@ plan:
   - id: 2
     transactions:
     - transaction-type: emulated-contract-publish
+      contract-name: sip-010-trait-ft-standard-v-1-1
+      emulated-sender: SM1FKXGNZJWSTWDWXQZJNF7B5TV5ZB235JTCXYXKD
+      path: .cache/requirements/SM1FKXGNZJWSTWDWXQZJNF7B5TV5ZB235JTCXYXKD.sip-010-trait-ft-standard-v-1-1.clar
+      clarity-version: 4
+    - transaction-type: emulated-contract-publish
+      contract-name: dlmm-pool-trait-v-1-1
+      emulated-sender: SM1FKXGNZJWSTWDWXQZJNF7B5TV5ZB235JTCXYXKD
+      path: .cache/requirements/SM1FKXGNZJWSTWDWXQZJNF7B5TV5ZB235JTCXYXKD.dlmm-pool-trait-v-1-1.clar
+      clarity-version: 4
+    - transaction-type: emulated-contract-publish
+      contract-name: dlmm-core-trait-v-1-1
+      emulated-sender: SM1FKXGNZJWSTWDWXQZJNF7B5TV5ZB235JTCXYXKD
+      path: .cache/requirements/SM1FKXGNZJWSTWDWXQZJNF7B5TV5ZB235JTCXYXKD.dlmm-core-trait-v-1-1.clar
+      clarity-version: 4
+    - transaction-type: emulated-contract-publish
+      contract-name: sip-013-trait-sft-standard-v-1-1
+      emulated-sender: SM1FKXGNZJWSTWDWXQZJNF7B5TV5ZB235JTCXYXKD
+      path: .cache/requirements/SM1FKXGNZJWSTWDWXQZJNF7B5TV5ZB235JTCXYXKD.sip-013-trait-sft-standard-v-1-1.clar
+      clarity-version: 4
+    - transaction-type: emulated-contract-publish
+      contract-name: sip-013-transfer-many-trait-v-1-1
+      emulated-sender: SM1FKXGNZJWSTWDWXQZJNF7B5TV5ZB235JTCXYXKD
+      path: .cache/requirements/SM1FKXGNZJWSTWDWXQZJNF7B5TV5ZB235JTCXYXKD.sip-013-transfer-many-trait-v-1-1.clar
+      clarity-version: 4
+    - transaction-type: emulated-contract-publish
+      contract-name: dlmm-pool-sbtc-usdcx-v-1-bps-10
+      emulated-sender: SM1FKXGNZJWSTWDWXQZJNF7B5TV5ZB235JTCXYXKD
+      path: .cache/requirements/SM1FKXGNZJWSTWDWXQZJNF7B5TV5ZB235JTCXYXKD.dlmm-pool-sbtc-usdcx-v-1-bps-10.clar
+      clarity-version: 4
+    - transaction-type: emulated-contract-publish
+      contract-name: dlmm-core-v-1-1
+      emulated-sender: SP1PFR4V08H1RAZXREBGFFQ59WB739XM8VVGTFSEA
+      path: .cache/requirements/SP1PFR4V08H1RAZXREBGFFQ59WB739XM8VVGTFSEA.dlmm-core-v-1-1.clar
+      clarity-version: 4
+    - transaction-type: emulated-contract-publish
+      contract-name: dlmm-swap-router-v-1-1
+      emulated-sender: SM1FKXGNZJWSTWDWXQZJNF7B5TV5ZB235JTCXYXKD
+      path: .cache/requirements/SM1FKXGNZJWSTWDWXQZJNF7B5TV5ZB235JTCXYXKD.dlmm-swap-router-v-1-1.clar
+      clarity-version: 4
+    - transaction-type: emulated-contract-publish
+      contract-name: usdcx
+      emulated-sender: SP120SBRBQJ00MCWS7TM5R8WJNTTKD5K0HFRC2CNE
+      path: .cache/requirements/SP120SBRBQJ00MCWS7TM5R8WJNTTKD5K0HFRC2CNE.usdcx.clar
+      clarity-version: 3
+    epoch: '3.3'
+  - id: 3
+    transactions:
+    - transaction-type: emulated-contract-publish
       contract-name: leash-adapter-trait
       emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
       path: contracts/leash-adapter-trait.clar
+      clarity-version: 4
+    - transaction-type: emulated-contract-publish
+      contract-name: leash-adapter-bitflow
+      emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
+      path: contracts/leash-adapter-bitflow.clar
       clarity-version: 4
     - transaction-type: emulated-contract-publish
       contract-name: leash-asset
