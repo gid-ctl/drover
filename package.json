@@ -5,13 +5,14 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "test": "vitest run",
+    "test": "vitest run --exclude '**/leash-bitflow.test.ts'",
     "test:report": "vitest run -- --coverage --costs",
     "test:watch": "chokidar \"tests/**/*.ts\" \"contracts/**/*.clar\" -c \"npm run test:report\"",
     "typecheck": "tsc --noEmit",
     "fuzz": "rv . leash-vault invariant --runs 200",
     "agent": "tsx agent/run.ts",
-    "agent:once": "tsx agent/run.ts --once"
+    "agent:once": "tsx agent/run.ts --once",
+    "test:fork": "vitest run tests/leash-bitflow.test.ts -- --manifest ./Clarinet-fork.toml"
   },
   "author": "",
   "license": "MIT",

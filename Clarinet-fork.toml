@@ -1,0 +1,74 @@
+[project]
+name = 'leash'
+description = 'Non-custodial trading authority for AI agents on Stacks: bounded, revocable, chain-enforced.'
+authors = []
+telemetry = false
+cache_dir = './.cache'
+
+# Canonical SIP-010 fungible-token trait (mainnet).
+[[project.requirements]]
+contract_id = 'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.sip-010-trait-ft-standard'
+
+# Official sBTC token. Clarinet remaps this address per-network on deploy
+# (simnet/mainnet -> SM3VDX..., testnet -> ST1F7QA2...sbtc-token).
+[[project.requirements]]
+contract_id = 'SM3VDXK3WZZSA84XXFKAFAF15NNZX32CTSG82JFQ4.sbtc-token'
+
+# Bitflow DLMM. Pulled in as requirements so the adapter is written and tested
+# against Bitflow's actually-deployed code rather than a mock of it. The router
+# is the swap entry point; the pool is the live sBTC/USDCx market (2.98 sBTC,
+# ~27k transactions). Clarinet resolves dlmm-core and the pool trait transitively.
+[[project.requirements]]
+contract_id = 'SM1FKXGNZJWSTWDWXQZJNF7B5TV5ZB235JTCXYXKD.dlmm-swap-router-v-1-1'
+
+[[project.requirements]]
+contract_id = 'SM1FKXGNZJWSTWDWXQZJNF7B5TV5ZB235JTCXYXKD.dlmm-pool-sbtc-usdcx-v-1-bps-10'
+
+# USDCx - the pool's quote asset.
+[[project.requirements]]
+contract_id = 'SP120SBRBQJ00MCWS7TM5R8WJNTTKD5K0HFRC2CNE.usdcx'
+
+[contracts.leash-adapter-trait]
+path = 'contracts/leash-adapter-trait.clar'
+clarity_version = 4
+epoch = 'latest'
+
+[contracts.leash-adapter-bitflow]
+path = 'contracts/leash-adapter-bitflow.clar'
+clarity_version = 4
+epoch = 'latest'
+
+[contracts.leash-asset]
+path = 'contracts/leash-asset.clar'
+clarity_version = 4
+epoch = 'latest'
+
+[contracts.leash-pool]
+path = 'contracts/leash-pool.clar'
+clarity_version = 4
+epoch = 'latest'
+
+[contracts.leash-rogue-adapter]
+path = 'contracts/leash-rogue-adapter.clar'
+clarity_version = 4
+epoch = 'latest'
+
+[contracts.leash-vault]
+path = 'contracts/leash-vault.clar'
+clarity_version = 4
+epoch = 'latest'
+
+[repl.analysis]
+passes = ['check_checker']
+
+[repl.analysis.lints]
+
+[repl.analysis.check_checker]
+strict = false
+trusted_sender = false
+trusted_caller = false
+callee_filter = false
+
+[repl.remote_data]
+enabled = true
+api_url = 'https://api.hiro.so'

@@ -164,12 +164,20 @@ LEASH_DEPLOYER=<contract address>  npm run agent -- --interval 60 --advisor
 ## Quickstart
 
 ```sh
-clarinet check    # our 5 contracts + sBTC requirements
+clarinet check     # our contracts + sBTC and Bitflow requirements
 npm install
-npm test          # 58 tests (contracts + agent + AI); no API key needed
-npm run typecheck # agent sources
-npm run fuzz      # Rendezvous invariant fuzzing, 200 randomised runs
+npm test           # 58 tests, offline and fast; no API key needed
+npm run test:fork  # 7 tests against Bitflow's LIVE mainnet state
+npm run typecheck  # agent sources
+npm run fuzz       # Rendezvous invariant fuzzing, 200 randomised runs
 ```
+
+Two test lanes on purpose. `npm test` runs offline against local simnet and
+stays fast. `npm run test:fork` uses `Clarinet-fork.toml`, which turns on
+Clarinet's remote-data forking so the Bitflow DLMM pool reports its **real
+mainnet state** — live bin geometry, live token pair, live fees. Forking is
+kept out of the default lane because routing every simnet call through the
+network turns a 3-second suite into a timeout.
 
 The deployed code is warning-free. The two warnings `clarinet check` reports are
 both on the `context` map — boilerplate Rendezvous requires in exactly that
